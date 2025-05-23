@@ -28,6 +28,21 @@ func Test_buildRatesMap(t *testing.T) {
 			},
 		},
 		{
+			name: "2 currencies without base",
+			rates: map[string]float64{
+				"EUR": 2,
+				"GBP": 0.5,
+			},
+			expected: RatesMap{
+				"EUR": {
+					"GBP": 0.25,
+				},
+				"GBP": {
+					"EUR": 4,
+				},
+			},
+		},
+		{
 			name: "3 currencies",
 			rates: map[string]float64{
 				"USD": 1.0,
