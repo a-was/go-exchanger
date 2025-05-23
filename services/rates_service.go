@@ -6,7 +6,7 @@ type RatesGetter interface {
 	GetRates(targetCurrencies []string) (RatesMap, error)
 }
 
-func buildRatesMap(rates map[string]float64) RatesMap {
+func BuildRatesMap(rates map[string]float64) RatesMap {
 	ratesMap := make(RatesMap, len(rates))
 
 	for c1, r1 := range rates {

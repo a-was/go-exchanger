@@ -51,5 +51,5 @@ func (s *OpenExchangeRatesService) GetRates(targetCurrencies []string) (RatesMap
 		}
 	}
 
-	return buildRatesMap(response.Rates), nil
+	return BuildRatesMap(response.Rates), nil
 }

@@ -68,7 +68,7 @@ func Test_buildRatesMap(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			rates := buildRatesMap(test.rates)
+			rates := BuildRatesMap(test.rates)
 			assert.Equal(t, test.expected, rates)
 		})
 	}

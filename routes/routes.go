@@ -18,6 +18,12 @@ func (r *Router) RegisterRoutes() {
 	r.Engine.GET("/rates", r.getRates)
 }
 
+type outRate struct {
+	From string  `json:"from"`
+	To   string  `json:"to"`
+	Rate float64 `json:"rate"`
+}
+
 func (r *Router) getRates(c *gin.Context) {
 	currenciesQ := c.Query("currencies")
 	if currenciesQ == "" {
@@ -37,22 +43,17 @@ func (r *Router) getRates(c *gin.Context) {
 		return
 	}
 
-	curMap := GetCurrenciesMap(currencies)
+	response := make([]outRate, 0, len(rates)*(len(rates)-1))
 
-	c.JSON(http.StatusOK, gin.H{"currencies": curMap, "rates": rates})
-}
-
-func GetCurrenciesMap(currencies []string) map[string][]string {
-	rates := make(map[string][]string, len(currencies))
-
-	for i, c1 := range currencies {
-		for j, c2 := range currencies {
-			if i == j {
-				continue
-			}
-			rates[c1] = append(rates[c1], c2)
+	for from, rates := range rates {
+		for to, rate := range rates {
+			response = append(response, outRate{
+				From: from,
+				To:   to,
+				Rate: rate,
+			})
 		}
 	}
 
-	return rates
+	c.JSON(http.StatusOK, response)
 }
