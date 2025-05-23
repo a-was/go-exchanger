@@ -1,21 +1,24 @@
 package routes
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
 
+	"github.com/a-was/go-exchanger/services"
 	"github.com/gin-gonic/gin"
 )
 
-type router struct{}
-
-func RegisterRoutes(r *gin.Engine) {
-	router := router{}
-
-	r.GET("/rates", router.getRates)
+type Router struct {
+	Engine       *gin.Engine
+	RatesService services.RatesGetter
 }
 
-func (r *router) getRates(c *gin.Context) {
+func (r *Router) RegisterRoutes() {
+	r.Engine.GET("/rates", r.getRates)
+}
+
+func (r *Router) getRates(c *gin.Context) {
 	currenciesQ := c.Query("currencies")
 	if currenciesQ == "" {
 		c.Status(http.StatusBadRequest)
@@ -27,9 +30,16 @@ func (r *router) getRates(c *gin.Context) {
 		return
 	}
 
+	rates, err := r.RatesService.GetRates(currencies)
+	if err != nil {
+		slog.Error("GetRates err", "currencies", currencies, "err", err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
 	curMap := GetCurrenciesMap(currencies)
 
-	c.JSON(http.StatusOK, gin.H{"currencies": curMap})
+	c.JSON(http.StatusOK, gin.H{"currencies": curMap, "rates": rates})
 }
 
 func GetCurrenciesMap(currencies []string) map[string][]string {

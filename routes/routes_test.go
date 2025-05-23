@@ -5,18 +5,22 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/a-was/go-exchanger/services"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_GetRates(t *testing.T) {
-	r := gin.Default()
 
-	RegisterRoutes(r)
+	r := Router{
+		Engine:       gin.Default(),
+		RatesService: &services.MockRatesService{},
+	}
+	r.RegisterRoutes()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/rates?currencies=GBP,EUR", nil)
-	r.ServeHTTP(w, req)
+	r.Engine.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
