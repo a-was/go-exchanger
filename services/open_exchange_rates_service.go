@@ -14,7 +14,7 @@ type OpenExchangeRatesService struct {
 
 var _ RatesGetter = (*OpenExchangeRatesService)(nil)
 
-type OpenExchangeResponse struct {
+type openExchangeResponse struct {
 	Timestamp int64              `json:"timestamp"`
 	Base      string             `json:"base"`
 	Rates     map[string]float64 `json:"rates"`
@@ -38,10 +38,17 @@ func (s *OpenExchangeRatesService) GetRates(targetCurrencies []string) (RatesMap
 		return nil, fmt.Errorf("http.Get invalid status code: %d", resp.StatusCode)
 	}
 
-	var response OpenExchangeResponse
+	var response openExchangeResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		slog.Error("json.NewDecoder err", "url", url, "err", err)
 		return nil, fmt.Errorf("json.NewDecoder err: %w", err)
+	}
+
+	for _, c := range targetCurrencies {
+		if _, ok := response.Rates[c]; !ok {
+			slog.Error("missing currency", "url", url, "currency", c)
+			return nil, fmt.Errorf("missing currency: %s", c)
+		}
 	}
 
 	return buildRatesMap(response.Rates), nil
