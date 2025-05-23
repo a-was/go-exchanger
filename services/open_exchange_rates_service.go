@@ -20,7 +20,7 @@ type OpenExchangeResponse struct {
 	Rates     map[string]float64 `json:"rates"`
 }
 
-func (s *OpenExchangeRatesService) GetRates(targetCurrencies []string) (map[string]float64, error) {
+func (s *OpenExchangeRatesService) GetRates(targetCurrencies []string) (RatesMap, error) {
 	url := fmt.Sprintf(
 		"https://openexchangerates.org/api/latest.json?app_id=%s&symbols=%s",
 		s.AppID, strings.Join(targetCurrencies, ","),
@@ -37,11 +37,12 @@ func (s *OpenExchangeRatesService) GetRates(targetCurrencies []string) (map[stri
 		slog.Error("http.Get invalid status code", "url", url, "status_code", resp.StatusCode)
 		return nil, fmt.Errorf("http.Get invalid status code: %d", resp.StatusCode)
 	}
+
 	var response OpenExchangeResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		slog.Error("json.NewDecoder err", "url", url, "err", err)
 		return nil, fmt.Errorf("json.NewDecoder err: %w", err)
 	}
 
-	return response.Rates, nil
+	return buildRatesMap(response.Rates), nil
 }
