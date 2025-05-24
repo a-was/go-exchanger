@@ -2,7 +2,7 @@ include .env
 export $(shell sed 's/=.*//' .env)
 
 run:
-	go run .
+	CGO_ENABLED=0 go run .
 
 test:
 	go test ./...
