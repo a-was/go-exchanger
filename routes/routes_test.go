@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -90,6 +91,52 @@ func Test_GetRates(t *testing.T) {
 					assert.Contains(t, test.expectedBody, rate)
 				}
 			}
+		})
+	}
+}
+
+func Test_GetExchange(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		from           string
+		to             string
+		amount         float64
+		expectedCode   int
+		expectedAmount float64
+	}{
+		{
+			name:           "WBTC/USDT",
+			from:           "WBTC",
+			to:             "USDT",
+			amount:         1,
+			expectedCode:   http.StatusOK,
+			expectedAmount: 57094.314314,
+		},
+	}
+
+	r := Router{
+		Engine: gin.Default(),
+	}
+	r.RegisterRoutes()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(
+				"GET", fmt.Sprintf("/exchange?from=%s&to=%s&amount=%f", test.from, test.to, test.amount), nil,
+			)
+			r.Engine.ServeHTTP(w, req)
+
+			assert.Equal(t, test.expectedCode, w.Code)
+
+			var response map[string]any
+			err := json.Unmarshal(w.Body.Bytes(), &response)
+			assert.NoError(t, err)
+
+			t.Log(response)
+
+			assert.EqualValues(t, test.expectedAmount, response["amount"])
 		})
 	}
 }
